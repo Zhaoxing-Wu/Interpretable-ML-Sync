@@ -1,6 +1,11 @@
 scripts/SDL
 data
 scripts/L2PSync
+
+#ipynb
+.ipynb_checkpoints
+__pycache__
+
 # Compiled source #
 ###################
 *.com
