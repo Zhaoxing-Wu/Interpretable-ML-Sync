@@ -28,6 +28,13 @@ import seaborn as sns
 import warnings
 warnings.filterwarnings("ignore")
 
+def subgraph(ntwk_path, sample_size, k, filename):
+    # COVID_PPI, Wisconsin87, UCLA26
+    G = nn.NNetwork()
+    G.load_add_edges(path, increment_weights=False, use_genfromtxt=True)
+    X, embs = G.get_patches(k=k, sample_size=sample_size, skip_folded_hom=True)
+    pickle.dump(X, open(filename, 'wb'))
+
 ###############################FCA##########################################################################################
 def FCA(G, s, k, iteration):
     """Implements the Firefly Cellular Automata model
