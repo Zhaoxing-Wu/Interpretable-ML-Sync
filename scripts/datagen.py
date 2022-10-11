@@ -1,39 +1,55 @@
-###############################IMPORT#PACKAGES############################################################################
-import pickle, csv, random
+
+############# Importing Libraries ###########
+
+from plotting_scripts.network_plots import *
+
+import pickle, csv
+
 import numpy as np
 import pandas as pd
 import statistics as s
-from itertools import product
 from math import floor
-from tqdm import trange
-from scipy.stats import bernoulli
+
 import networkx as nx
 from NNetwork import NNetwork as nn
-from NNetwork.NNetwork import NNetwork
-
-from sklearn import svm, metrics, model_selection
-from sklearn.cluster import KMeans
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.svm import SVC
-from sklearn.decomposition import PCA ### Use truncated SVD / online PCA later for better computational efficiency
-from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, accuracy_score
-from sklearn.model_selection import train_test_split
-from imblearn.under_sampling import RandomUnderSampler
+# from NNetwork.NNetwork import NNetwork
 from karateclub import Graph2Vec, Node2Vec
-from SDL.src.SDL_BCD import SDL_BCD
 
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
 import warnings
 warnings.filterwarnings("ignore")
 
-def subgraph(ntwk_path, sample_size, k, filename):
-    # COVID_PPI, Wisconsin87, UCLA26
+############## Subgraph Sampling ##############
+
+def subgraphs_realworld(ntwk, sample_size, k, filename, plot_embeds=False):
+    """Generate subgraphs by sampling from the provided real-world network. Plot a sample if specified.
+
+    Args:
+        ntwk (string): Input real-world network to the model
+        sample_size (int): number of subgraphs to sample
+        k (int): number of nodes in each subgraph
+        filename (str): output filename
+        plot_embeds (bool): whether to plot the embeddings samples of the subgraphs
+
+    Returns:
+        None
+    """
+    ntwk_nonumber = ''.join([i for i in ntwk if not i.isdigit()])
+    path = "../Networks_all_NDL/" + str(ntwk) + '.txt'
     G = nn.NNetwork()
     G.load_add_edges(path, increment_weights=False, use_genfromtxt=True)
     X, embs = G.get_patches(k=k, sample_size=sample_size, skip_folded_hom=True)
     pickle.dump(X, open(filename, 'wb'))
+
+    if plot_embeds:
+        display_graphs(title='Induced subgraphs on {}-walks in {}'.format(k, ntwk_nonumber),
+                 save_path=None, 
+                 data = [X, embs],
+                 grid_shape = [5, 15],
+                 fig_size = [15, 5],
+                 show_importance=False)
+
+######################################################
+
 
 ###############################FCA##########################################################################################
 def FCA(G, s, k, iteration):
