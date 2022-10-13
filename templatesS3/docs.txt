@@ -1,0 +1,73 @@
+=====================================
+'writes3TEMPLATE.py'
+=====================================
+You will be storing you filenames under the "Key" (uppercase) argument, which is case sensitive.
+You can naturally define the subfolders as usual, and creating new folders is
+easy as specifying the 'folder/subfolder/file' structure for the file name. 
+
+The main key is the *** data generation *** code block.
+You can do whatever you need to do in terms of creating the data, just
+be sure to store it under the variable 'data_to_store.' 
+
+The rest of the script connects to the specific bucket, creates a binary stream,
+and dumps it into the bucket.
+
+You can check the bucket contents with the last code block.
+
+=====================================
+'reads3TEMPLATE.py'
+=====================================
+You can check the bucket contents with second code block. 
+
+Same as above, you can look through the bucket contents either through the AWS 
+management console or through the editor/python-interpreter output. The 
+difference here is that you pull the filename under the 'key' (lowercase) 
+argument. This basically reverse the above script: we connect to the bucket,
+pull bull the serialized object from the bucket, deserialize it, and 
+then load it as a python variable.
+
+The last code block *** the rest of the script *** is where you can play with
+the loaded object as you like.
+
+=====================================
+Important notes
+=====================================
+1. When to create new folders
+
+"You wouldn't store your shoes in the kitchen cupboards."
+
+Create new folders when you are storing a set of common
+object types. For example a set of binary files corresponding 
+to networkx objects and pandas dataframes of the same dimension
+should be stored in separate folders.
+
+2. Naming convention
+
+Whether you are naming a file or a folder, always append it with 
+'-MODAYE' the two digit month, two digit day, and last two digits 
+of the year, followed by the file extention
+(e.g., 9 October 2022 would append files and all folders
+with '-100922'+'.pkl'.
+
+3. File extensions
+
+Since you are pickling all your objects, you can have file extension
+names of networkx as 'filename.nx', or for numpy files, 'filename.npy'
+for dataframe 'mydataframe.df.'
+
+4. Character usage
+
+Limit your character usage to just lower case letters and numbers.
+Use '_' underscore to delimit words and longer strings, NOT '-' hyphens.
+
+5. Self-commenting names
+
+This one is more of an art. The idea to descriptive names is
+to make sure that they are not confusing. Compare 'fca20.file' 
+to 'fcaKappa5_nodes20_KKT.npy.' The first file name
+says nothing about the kappa color, the number of nodes, the possible
+dimensions etc...
+
+Everyone will have different naming styles, but generally order the
+descriptions as going from most specific to most general like:
+'kappa5node20time256modelFCA.npy'
