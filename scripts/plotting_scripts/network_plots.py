@@ -1,10 +1,9 @@
-import numpy as np
-
-from NNetwork import NNetwork as nn
-import networkx as nx
-
-import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+from NNetwork import NNetwork as nn
+
 
 def display_graphs(title,
                    save_path = None,
@@ -15,7 +14,7 @@ def display_graphs(title,
 
         # columns of X = vectorized k x k adjacency matrices
         # corresponding list in embs = sequence of nodes (may overalp)
-        X, embs = data
+        X, embs = data  # type: ignore
         print('X.shape', X.shape)
 
         rows = grid_shape[0]
@@ -49,8 +48,8 @@ def display_graphs(title,
             G1 = nx.from_numpy_matrix(A_sub)
             ax = fig.add_subplot(inner_grid[0, 0])
             pos = nx.spring_layout(G1)
-            edges = G1.edges()
-            weights = [1*G1[u][v]['weight'] for u,v in edges]
+            edges = G1.edges()  # type: ignore
+            weights = [1*G1[u][v]['weight'] for u,v in edges]  # type: ignore
             nx.draw(G1, with_labels=False, node_size=20, ax=ax, width=weights, label='Graph')
 
             ax.set_xticks([])
@@ -58,7 +57,7 @@ def display_graphs(title,
 
         plt.suptitle(title, fontsize=15)
         fig.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.2, hspace=0)
-        fig.savefig(save_path, bbox_inches='tight')
+        fig.savefig(save_path, bbox_inches='tight')  # type: ignore
         
         
 def display_dictionary(W, dictionary_shape=None ,save_name=None, score=None, grid_shape=None, figsize=[10,10]):
@@ -85,7 +84,7 @@ def display_dictionary(W, dictionary_shape=None ,save_name=None, score=None, gri
                             subplot_kw={'xticks': [], 'yticks': []})
         
         
-    for ax, i in zip(axs.flat, range(100)):
+    for ax, i in zip(axs.flat, range(100)):  # type: ignore
         if score is not None:
             idx = np.argsort(score)
             idx = np.flip(idx)    
@@ -118,8 +117,8 @@ def display_dict_and_graph(title=None,
                              weight_graph = 100,
                              plot_graph_only=False,
                              show_importance=False):
-        n_components = W.shape[1]
-        k = int(np.sqrt(W.shape[0]))
+        n_components = W.shape[1] #type: ignore
+        k = int(np.sqrt(W.shape[0])) #type: ignore
         rows = np.round(np.sqrt(n_components))
         rows = rows.astype(int)
         if grid_shape is not None:
@@ -131,7 +130,7 @@ def display_dict_and_graph(title=None,
             else:
                 cols = rows + 1
         if At is None:
-            idx = np.arange(W.shape[1])
+            idx = np.arange(W.shape[1]) #type: ignore
         else:
             importance = np.sqrt(At.diagonal()) / sum(np.sqrt(At.diagonal()))
             # importance = np.sum(self.code, axis=1) / sum(sum(self.code))
@@ -154,7 +153,7 @@ def display_dict_and_graph(title=None,
                     a = i // cols
                     b = i % cols
                     ax = fig.add_subplot(inner_grid[a, b])
-                    ax.imshow(W.T[idx[i]].reshape(k, k), cmap="gray_r", interpolation='nearest')
+                    ax.imshow(W.T[idx[i]].reshape(k, k), cmap="gray_r", interpolation='nearest') # type: ignore
                     # ax.set_xlabel('%1.2f' % importance[idx[i]], fontsize=13)  # get the largest first
                     # ax.xaxis.set_label_coords(0.5, -0.05)  # adjust location of importance appearing beneath patches
                     ax.set_xticks([])
@@ -168,28 +167,28 @@ def display_dict_and_graph(title=None,
                     ax = fig.add_subplot(inner_grid[a, b])
                     if regression_coeff is not None:
                         ax.set_title(str(np.round(regression_coeff[i+1], 8)))
-                    k = int(np.sqrt(W.shape[0]))
-                    A_sub = W[:,idx[i]].reshape(k,k)
+                    k = int(np.sqrt(W.shape[0])) #type: ignore
+                    A_sub = W[:,idx[i]].reshape(k,k) #type: ignore
                     H = nx.from_numpy_matrix(A_sub)
                     G1 = nx.Graph()
                     for a in np.arange(k):
                         for b in np.arange(k):
-                            u = list(H.nodes())[a]
-                            v = list(H.nodes())[b]
-                            if H.has_edge(u,v):
+                            u = list(H.nodes())[a] #type: ignore
+                            v = list(H.nodes())[b] #type: ignore
+                            if H.has_edge(u,v): #type: ignore
                                 if np.abs(a-b) == 1:
                                     G1.add_edge(u,v, color='r', weight=A_sub[a,b])
                                 else:
                                     G1.add_edge(u,v, color='b', weight=A_sub[a,b])
                     pos = nx.spring_layout(G1)
                     edges = G1.edges()
-                    colors = [G1[u][v]['color'] for u,v in edges]
-                    weights = [weight_graph*G1[u][v]['weight'] for u,v in edges]
+                    colors = [G1[u][v]['color'] for u,v in edges] #type: ignore
+                    weights = [weight_graph*G1[u][v]['weight'] for u,v in edges] #type: ignore
                     nx.draw(G1, with_labels=False, node_size=20, ax=ax, width=weights, edge_color=colors, label='Graph')
                     
                     ## Fix this
                     if show_importance:
-                        ax.set_xlabel('%1.2f' % importance[idx[i]], fontsize=13)  # get the largest first
+                        ax.set_xlabel('%1.2f' % importance[idx[i]], fontsize=13)  # type: ignore , get the largest first 
                         ax.xaxis.set_label_coords(0.5, -0.05)  # adjust location of importance appearing beneath patches
 #                     ax.set_xticks([])
 #                     ax.set_yticks([])

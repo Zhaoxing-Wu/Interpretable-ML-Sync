@@ -1,21 +1,20 @@
 
 ############# Importing Libraries ###########
 
-from plotting_scripts.network_plots import *
-
-import pickle, csv
-
-import numpy as np
-import pandas as pd
+import csv
+import pickle
 import statistics as s
+import warnings
 from math import floor
 
 import networkx as nx
-from NNetwork import NNetwork as nn
+import numpy as np
+import pandas as pd
 # from NNetwork.NNetwork import NNetwork
 from karateclub import Graph2Vec, Node2Vec
+from NNetwork import NNetwork as nn
+from plotting_scripts.network_plots import *
 
-import warnings
 warnings.filterwarnings("ignore")
 
 ############## Subgraph Sampling ##############
@@ -480,11 +479,11 @@ def datagen_graph_features(num_nodes, file_name, X):
             
             node_feature = []
             node_feature.append(list(nx.degree_centrality(G).values()))
-            node_feature.append(list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))
-            node_feature.append(list(nx.betweenness_centrality(G).values()))
+            node_feature.append(list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))  # type: ignore
+            node_feature.append(list(nx.betweenness_centrality(G).values())) # type: ignore
             node_feature.append(list(nx.closeness_centrality(G).values()))
-            node_feature.append(list(nx.clustering(G).values()))
-            node_feature.append(list(dict(G.degree()).values()))
+            node_feature.append(list(nx.clustering(G).values())) # type: ignore
+            node_feature.append(list(dict(G.degree()).values())) # type: ignore
             sample = sample + list(np.array(node_feature).reshape(1, -1)[0])
 
             write.writerow(sample)
