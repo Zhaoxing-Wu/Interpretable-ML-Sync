@@ -1,18 +1,15 @@
 
 ############# Importing Libraries ###########
 
-<<<<<<< HEAD:scripts/datagen.py
 import csv
 import pickle
-======
-from plotting_scripts.network_plots import *
+#from plotting_scripts.network_plots import *
 
 import pickle
 import csv
 
 import numpy as np
 import pandas as pd
->>>>>>> 7616f1afa28895be9767b67eff932a19574277a3:Drivers/datagen/datagen.py
 import statistics as s
 import warnings
 from math import floor
@@ -21,9 +18,9 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 # from NNetwork.NNetwork import NNetwork
-from karateclub import Graph2Vec, Node2Vec
+#from karateclub import Graph2Vec, Node2Vec
 from NNetwork import NNetwork as nn
-from plotting_scripts.network_plots import *
+#from plotting_scripts.network_plots import *
 
 warnings.filterwarnings("ignore")
 
@@ -507,14 +504,11 @@ def datagen_graph_features(num_nodes, file_name, X):
 
             node_feature = []
             node_feature.append(list(nx.degree_centrality(G).values()))
-<<<<<<< HEAD:scripts/datagen.py
             node_feature.append(list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))  # type: ignore
             node_feature.append(list(nx.betweenness_centrality(G).values())) # type: ignore
-=======
             node_feature.append(
                 list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))
             node_feature.append(list(nx.betweenness_centrality(G).values()))
->>>>>>> 7616f1afa28895be9767b67eff932a19574277a3:Drivers/datagen/datagen.py
             node_feature.append(list(nx.closeness_centrality(G).values()))
             node_feature.append(list(nx.clustering(G).values())) # type: ignore
             node_feature.append(list(dict(G.degree()).values())) # type: ignore
