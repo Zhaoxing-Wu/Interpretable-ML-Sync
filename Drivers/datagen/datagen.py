@@ -4,7 +4,7 @@
 <<<<<<< HEAD:scripts/datagen.py
 import csv
 import pickle
-=======
+======
 from plotting_scripts.network_plots import *
 
 import pickle
