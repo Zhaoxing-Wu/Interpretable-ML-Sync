@@ -1,6 +1,7 @@
 scripts/SDL
 data
 scripts/L2PSync
+*.txt
 
 #ipynb
 .ipynb_checkpoints
