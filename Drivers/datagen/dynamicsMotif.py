@@ -10,42 +10,7 @@ import os
 import boto3
 import pickle
 
-# =======================================================
-# Connect to S3 resource
-# =======================================================
 df = pd.read_csv('ca_param.csv')
-# Caltech
-caltech = {
-        'fca': df[df['ntwk']=="Caltech36"][["fca_pred_iter","fca_train_iter","fca_kappa"]],
-        'kura': df[df['ntwk']=="Caltech36"][["kura_pred_iter","kura_train_iter","kura_k",
-            "kura_step","kura_skip"]],
-        'ghm': df[df['ntwk']=="Caltech36"][["ghm_pred_iter","ghm_train_iter","ghm_kappa"]]
-        }
-
-# UCLA
-ucla = {
-        'fca': df[df['ntwk']=="UCLA26"][["fca_pred_iter","fca_train_iter","fca_kappa"]],
-        'kura': df[df['ntwk']=="UCLA26"][["kura_pred_iter","kura_train_iter","kura_k",
-            "kura_step","kura_skip"]],
-        'ghm': df[df['ntwk']=="UCLA26"][["ghm_pred_iter","ghm_train_iter","ghm_kappa"]]
-        }
-
-# nws
-nws = {
-        'fca': df[df['ntwk']=="nws"][["fca_pred_iter","fca_train_iter","fca_kappa"]],
-        'kura': df[df['ntwk']=="nws"][["kura_pred_iter","kura_train_iter","kura_k",
-            "kura_step","kura_skip"]],
-        'ghm': df[df['ntwk']=="nws"][["ghm_pred_iter","ghm_train_iter","ghm_kappa"]]
-        }
-
-# parameters
-params = {
-        'Caltech36': caltech, 
-        'UCLA26': ucla,
-        'nws-20000-1000-05': nws
-        }
-
-# names of networks
 names = ['nws-20000-1000-05', 'UCLA26', 'Caltech36']
 
 # =======================================================
@@ -68,84 +33,75 @@ objects = s3_client.list_objects_v2(Bucket='interpretable-sync')
 allkeys = [obj['Key'] for obj in objects['Contents']]
 
 for ntwk in names:
-    # read in file from AWS
     samples = 10000
-    for i,k in enumerate([10, 15, 20, 25, 30]):
+    for i,k in enumerate([25, 30]):
+        #read X
         filename = "motifSampling/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(k)+"_PATCHES.pkl"
-        # pickle load the object
         xEmbDes = pickle.loads(s3_bucket.Object(filename).get()['Body'].read())
-        
-        # "Bella threw away other returns"
         if ntwk == "nws-20000-1000-05":
-            adjmats = xEmbDes
+            X = xEmbDes
         else:
-            adjmats = xEmbDes['X']
+            X = xEmbDes['X']
+            
+        num_nodes = k
 
         # set of dynamics
-        dynamics = {"fca": datagen.FCA, "ghm": datagen.GHM, "kura": datagen.Kuramoto}
         for dynamic in ["kura","fca","ghm"]:
-
-            # simulation parameters
-            pntwk = params[ntwk][dynamic].copy().reset_index()
-
-            # file key --- file writing
-            name = "motifDynamics/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_DYNAMIC-'+str(dynamic)+'_PARAMS-csv.pkl'
-            if name not in allkeys:
-                # ================================================================================================
-                # ================================================================================================
-                # ================================================================================================
-                # iterate through each motif
-                data_to_store = []
-                for mat in tqdm.tqdm(adjmats.transpose()):
-
-                    # create adjacency matrix
-                    submat = mat.reshape(k,k)
-                    # create graph
-                    G = nx.from_numpy_matrix(submat)
+            
+            #output name
+            name_dynamics = "motifDynamics/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_DYNAMIC-'+str(dynamic)+'_PARAMS-csv.pkl'
+            name_coladj = "motifDynamics/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_COLADJ-'+str(dynamic)+'_PARAMS-csv.pkl'
+            
+            if name_dynamics not in allkeys:
+                print("pass")
+                if dynamic=="kura":
+                    df_dynamics = datagen.datagen_Kuramoto_dynamics(num_nodes, 
+                                              df[df['ntwk']==ntwk][df['k']==k][["kura_k"]].values[0][0], #k
+                                              df[df['ntwk']==ntwk][df['k']==k][["kura_step"]].values[0][0], #step 
+                                              df[df['ntwk']==ntwk][df['k']==k][["kura_pred_iter"]].values[0][0], #pred_iter 
+                                              df[df['ntwk']==ntwk][df['k']==k][["kura_train_iter"]].values[0][0], #train_iter 
+                                              df[df['ntwk']==ntwk][df['k']==k][["kura_skip"]].values[0][0], #skip
+                                              X)
+                    df_coladj = datagen.datagen_Kuramoto_coladj(num_nodes, 
+                                                        X, 
+                                                        df_dynamics)
                     
-                    # simulation
-                    if dynamic=="kura":
-                        cols = np.random.rand(k)*2*np.pi-np.pi
-                        ret, label = dynamics[dynamic](G, pntwk['kura_k'][i], cols, pntwk['kura_train_iter'][i], pntwk['kura_step'][i])
-
-                        # skipping subsample
-
-                        # test label
-
-                        # baseline width
-                    elif dynamic=="fca":
-                        cols = np.random.randint(0, pntwk['fca_kappa'][i], k )
-                        ret, label = dynamics[dynamic](G, cols, pntwk['fca_kappa'][i], pntwk['fca_train_iter'][i])
-                        # test label
-
-                        # baseline width
-                    else:
-                        cols = np.random.randint(0, pntwk['ghm_kappa'][i], k)
-                        ret, label = dynamics[dynamic](G, cols, pntwk['ghm_kappa'][i], pntwk['ghm_train_iter'][i])
-                        # test label
-
-                        # baseline width
-                    colorsNlabels = [ret, G, label]
-
-                # append
-                data_to_store.append(colorsNlabels) 
-                # ================================================================================================
-                # ================================================================================================
-                # ================================================================================================
-
-                # =======================================================
-                # Object -> binary stream -> bucket
-                # =======================================================
-                # Use dumps() to make it serialized
-                binary_stream = pickle.dumps(data_to_store)
-                # dump in bucket
-                print("'"+name+"' was added to the bucket.")
-                s3_bucket.put_object(Body=binary_stream, Key=name)
+                    
+                elif dynamic=="fca":
+                    df_dynamics = datagen.datagen_FCA_dynamics(num_nodes, 
+                                         df[df['ntwk']==ntwk][df['k']==k][["fca_kappa"]].values[0][0],
+                                         df[df['ntwk']==ntwk][df['k']==k][["fca_pred_iter"]].values[0][0],
+                                         df[df['ntwk']==ntwk][df['k']==k][["fca_train_iter"]].values[0][0],
+                                         X)
+                    df_coladj = datagen.datagen_coladj(num_nodes, 
+                                   df[df['ntwk']==ntwk][df['k']==k][["fca_kappa"]].values[0][0], 
+                                   X, 
+                                   df_dynamics)
+                        
+                else:#ghm
+                    df_dynamics = datagen.datagen_GHM_dynamics(num_nodes, 
+                                         df[df['ntwk']==ntwk][df['k']==k][["ghm_kappa"]].values[0][0],
+                                         df[df['ntwk']==ntwk][df['k']==k][["ghm_pred_iter"]].values[0][0],
+                                         df[df['ntwk']==ntwk][df['k']==k][["ghm_train_iter"]].values[0][0],
+                                         X)
+                    df_coladj = datagen.datagen_coladj(num_nodes, 
+                                   df[df['ntwk']==ntwk][df['k']==k][["ghm_kappa"]].values[0][0], 
+                                   X, 
+                                   df_dynamics)
+                
+                
+                binary_stream = pickle.dumps(df_dynamics)
+                print("'"+name_dynamics+"' was added to the bucket.")
+                s3_bucket.put_object(Body=binary_stream, Key=name_dynamics)
+                
+                binary_stream = pickle.dumps(df_coladj)
+                print("'"+name_coladj+"' was added to the bucket.")
+                s3_bucket.put_object(Body=binary_stream, Key=name_coladj)
                 # update allkeys
                 objects = s3_client.list_objects_v2(Bucket='interpretable-sync')
                 allkeys = [obj['Key'] for obj in objects['Contents']]
+                
             else:
-                print(name+" already exists.")
-
-            # free memory
-            del pntwk            
+                print(name_dynamics+" already exists.")
+            
+            #del pntwk # free memory
