@@ -37,4 +37,3 @@ name = "motifDynamics/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_DYNAMI
 motif = pickle.loads(s3_bucket.Object(name).get()['Body'].read())
 
 import pdb; pdb.set_trace()
-

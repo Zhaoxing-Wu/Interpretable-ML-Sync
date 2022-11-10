@@ -37,7 +37,7 @@ with os.scandir('../Networks_all_NDL') as entries:
         names.append(entry.name.split(".")[0])
 
 print(names)
-#import pdb; pdb.set_trace()
+import pdb; pdb.set_trace()
 
 # for each network
 for ntwk in tqdm.tqdm(names[15:]):
