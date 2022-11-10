@@ -44,6 +44,8 @@ params = {
         'UCLA26': ucla,
         'nws-20000-1000-05': nws
         }
+
+# names of networks
 names = ['nws-20000-1000-05', 'UCLA26', 'Caltech36']
 
 # =======================================================
@@ -89,6 +91,9 @@ for ntwk in names:
             # file key --- file writing
             name = "motifDynamics/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_DYNAMIC-'+str(dynamic)+'_PARAMS-csv.pkl'
             if name not in allkeys:
+                # ================================================================================================
+                # ================================================================================================
+                # ================================================================================================
                 # iterate through each motif
                 data_to_store = []
                 for mat in tqdm.tqdm(adjmats.transpose()):
@@ -102,16 +107,32 @@ for ntwk in names:
                     if dynamic=="kura":
                         cols = np.random.rand(k)*2*np.pi-np.pi
                         ret, label = dynamics[dynamic](G, pntwk['kura_k'][i], cols, pntwk['kura_train_iter'][i], pntwk['kura_step'][i])
+
+                        # skipping subsample
+
+                        # test label
+
+                        # baseline width
                     elif dynamic=="fca":
                         cols = np.random.randint(0, pntwk['fca_kappa'][i], k )
                         ret, label = dynamics[dynamic](G, cols, pntwk['fca_kappa'][i], pntwk['fca_train_iter'][i])
+                        # test label
+
+                        # baseline width
                     else:
                         cols = np.random.randint(0, pntwk['ghm_kappa'][i], k)
                         ret, label = dynamics[dynamic](G, cols, pntwk['ghm_kappa'][i], pntwk['ghm_train_iter'][i])
+                        # test label
+
+                        # baseline width
                     colorsNlabels = [ret, G, label]
 
                 # append
                 data_to_store.append(colorsNlabels) 
+                # ================================================================================================
+                # ================================================================================================
+                # ================================================================================================
+
                 # =======================================================
                 # Object -> binary stream -> bucket
                 # =======================================================

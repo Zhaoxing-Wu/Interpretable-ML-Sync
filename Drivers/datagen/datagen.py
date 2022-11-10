@@ -203,7 +203,11 @@ def datagen_coladj(num_nodes, kappa, df_graph, df_dynamics, file_name):
 
         df = df.append(
             pd.Series(np.array(temp).reshape(1, -1)[0]), ignore_index=True)
-    df.to_csv(file_name, index=False)
+
+    if len(filename):
+        df.to_csv(file_name, index=False)
+    else:
+        return df
 
 
 ##############################GreenbergHasting##############################################################################
@@ -443,7 +447,11 @@ def datagen_Kuramoto_coladj(num_nodes, df_graph, df_dynamics, file_name):
 
         df = df.append(
             pd.Series(np.array(temp).reshape(1, -1)[0]), ignore_index=True)
-    df.to_csv(file_name, index=False)
+
+    if len(filename):
+        df.to_csv(file_name, index=False)
+    else:
+        return df
 
 
 #################################GRAPH#FEATURES#############################################################################
