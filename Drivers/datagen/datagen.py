@@ -444,14 +444,11 @@ def datagen_Kuramoto_coladj(num_nodes, df_graph, df_dynamics):
 
 
 #################################GRAPH#FEATURES#############################################################################
-# X: a list of graph structure (for each graph, length = k^2 if num_nodes=k)
-# num_edges, num_nodes, min_degree, max_degree, diameter
-def datagen_graph_features(num_nodes, file_name, X):
+def datagen_graph_features(num_nodes, X):
     """Generate graph features dataset
 
     Args:
         num_nodes: number of nodes of underlying graphs
-        file_name: output filename
         X: a list of vectorized adjacency matrix (for each graph, length = k^2 if num_nodes=k)
 
     Output:
@@ -462,54 +459,54 @@ def datagen_graph_features(num_nodes, file_name, X):
         node_level features: "degree_centrality", "eigenvector_centrality", "betweenness_centrality", 
               "closeness_centrality", "clustering", "degree"
     """
-    file = open(file_name, 'w+', newline='')
 
     header = ["num_edges", "num_nodes", "min_degree", "max_degree", "diameter",
               "degree_assortativity_coef", "num_clique", "avg_clustering_coef",
               "density"]
+    """
     for i in ["degree_centrality", "eigenvector_centrality", "betweenness_centrality",
               "closeness_centrality", "clustering", "degree"]:
         for j in range(num_nodes):
             header.append(i + "_n" + str(j + 1))
+    """
+    df = []
+    
+    for i in range(X.shape[1]):  # X.shape[1]: total number of graphs
+        #X.shape[0]: num_nodes^2
+        G = nx.from_pandas_adjacency(
+            pd.DataFrame(X[:, i].reshape(num_nodes, -1)))
+        G = nx.Graph(G)
 
-    with file:
-        write = csv.writer(file)
+        num_edges = G.number_of_edges()
+        min_degree = min(list(G.degree), key=lambda x: x[1])[1]
+        max_degree = max(list(G.degree), key=lambda x: x[1])[1]
+        diameter = nx.diameter(G)
 
-        write.writerow(header)
-        for i in range(X.shape[1]):  # X.shape[1]: total number of graphs
-            #X.shape[0]: num_nodes^2
-            G = nx.from_pandas_adjacency(
-                pd.DataFrame(X[:, i].reshape(num_nodes, -1)))
-            G = nx.Graph(G)
+        degree_assortativity_coef = nx.degree_assortativity_coefficient(G)
+        num_clique = nx.graph_clique_number(G)
+        avg_clustering_coef = nx.average_clustering(G)
+        #small_world_coef = nx.omega(G)
+        density = nx.density(G)
 
-            num_edges = G.number_of_edges()
-            min_degree = min(list(G.degree), key=lambda x: x[1])[1]
-            max_degree = max(list(G.degree), key=lambda x: x[1])[1]
-            diameter = nx.diameter(G)
+        sample = [num_edges, num_nodes, min_degree, max_degree, diameter,
+                  degree_assortativity_coef, num_clique, avg_clustering_coef,
+                  density]
+        """
+        node_feature = []
+        node_feature.append(list(nx.degree_centrality(G).values()))
+        node_feature.append(list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))  # type: ignore
+        node_feature.append(list(nx.betweenness_centrality(G).values())) # type: ignore
+        node_feature.append(
+            list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))
+        node_feature.append(list(nx.betweenness_centrality(G).values()))
+        node_feature.append(list(nx.closeness_centrality(G).values()))
+        node_feature.append(list(nx.clustering(G).values())) # type: ignore
+        node_feature.append(list(dict(G.degree()).values())) # type: ignore
+        sample = sample + list(np.array(node_feature).reshape(1, -1)[0])
+        """
+        df.append(sample)
 
-            degree_assortativity_coef = nx.degree_assortativity_coefficient(G)
-            num_clique = nx.graph_clique_number(G)
-            avg_clustering_coef = nx.average_clustering(G)
-            #small_world_coef = nx.omega(G)
-            density = nx.density(G)
-
-            sample = [num_edges, num_nodes, min_degree, max_degree, diameter,
-                      degree_assortativity_coef, num_clique, avg_clustering_coef,
-                      density]
-
-            node_feature = []
-            node_feature.append(list(nx.degree_centrality(G).values()))
-            node_feature.append(list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))  # type: ignore
-            node_feature.append(list(nx.betweenness_centrality(G).values())) # type: ignore
-            node_feature.append(
-                list(nx.eigenvector_centrality(G, tol=1.0e-3).values()))
-            node_feature.append(list(nx.betweenness_centrality(G).values()))
-            node_feature.append(list(nx.closeness_centrality(G).values()))
-            node_feature.append(list(nx.clustering(G).values())) # type: ignore
-            node_feature.append(list(dict(G.degree()).values())) # type: ignore
-            sample = sample + list(np.array(node_feature).reshape(1, -1)[0])
-
-            write.writerow(sample)
+    return pd.DataFrame(df, columns=header)
 
 
 def datagen_n2v(num_nodes, file_name, dimensions, X):

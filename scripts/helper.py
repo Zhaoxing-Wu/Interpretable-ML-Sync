@@ -114,7 +114,9 @@ def dict_handcraft(diameter, base, X, r):
     sample_size = 100 #number of samples used for learning dictionary
     ind_dense = sorted(range(len(diameter)), key=lambda i: diameter[i], reverse=True)[:sample_size]
     ind_sparse = sorted(range(len(diameter)), key=lambda i: diameter[i], reverse=False)[:sample_size]
-    ind_con = X.loc[base==True,].index.tolist()[:sample_size]
+    ind_con = X.loc[base==True,].index.tolist()
+    if len(ind_con)>sample_size:
+        ind_con = ind_con[:sample_size]
     
     W_dense, H_dense = ALS(X=X.loc[ind_dense,].T.values, 
                            n_components=r, n_iter=100, a0 = 0, a1 = 0, a12 = 0, H_nonnegativity=True, 
