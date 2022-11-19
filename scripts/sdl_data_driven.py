@@ -10,6 +10,7 @@ import os
 import boto3
 import pickle
 import statsmodels.api as sm
+from firthlogist import FirthLogisticRegression
 
 # =======================================================
 # Connect to S3 resource
@@ -118,14 +119,17 @@ for ntwk in ['nws-20000-1000-05']:
                                                     test_size = 0.2, 
                                                     random_state = 4, 
                                                     stratify = y_res)
-                model = sm.Logit(y_train, np.matmul(W, X_train.T).T).fit(method='newton')
+                
+                                
+                model = FirthLogisticRegression(wald=True)
+                model.fit(np.matmul(W, X_train.T).T, y_train)
                 print(model.summary())
                 print(accuracy_score(y_test, model.predict(np.matmul(W, X_test.T).T).round()))
                 logreg = {"summary": model.summary(),
                          "predict_prob": model.predict(np.matmul(W, X_test.T).T)}
                 s3_bucket.put_object(Body=pickle.dumps(logreg), 
                                      Key = "output/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(num_nodes)+'_DYNAMIC-'+str(ca)+'_theory_driven_logreg-r1.pkl')
-                
+                    
                 xi = 1
                 iter_avg = 1
                 beta = 0.5
@@ -142,7 +146,7 @@ for ntwk in ['nws-20000-1000-05']:
                     results_dict_new = SDL_BCD_class_new.fit(iter=iteration, subsample_size=None,
                                                                 beta = beta, search_radius_const = np.linalg.norm(X_train), update_nuance_param=False, if_compute_recons_error=False, if_validate=False)
                     print("Theory driven SDL"+ str(results_dict_new["Accuracy"]))
-                    s3_bucket.put_object(Body=pickle.dumps(logreg),
+                    s3_bucket.put_object(Body=pickle.dumps(results_dict_new),
                                          Key = "output/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(num_nodes)+'_DYNAMIC-'+str(ca)+'_theory_driven_sdlsdl-r4.pkl')
                 
                 else:
@@ -160,7 +164,7 @@ for ntwk in ['nws-20000-1000-05']:
                     results_dict_new = SDL_BCD_class_new.fit(iter=iteration, subsample_size=None,
                                                                 beta = beta, search_radius_const = np.linalg.norm(X_train), update_nuance_param=False, if_compute_recons_error=False, if_validate=False)
                     print("Theory driven SDL"+ str(results_dict_new["Accuracy"]))
-                    s3_bucket.put_object(Body=pickle.dumps(logreg),
+                    s3_bucket.put_object(Body=pickle.dumps(results_dict_new),
                                          Key = "output/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(num_nodes)+'_DYNAMIC-'+str(ca)+'_theory_driven_sdlsdl-r4.pkl')
 
 ###########################################       
@@ -196,7 +200,8 @@ for ntwk in ntwk_names:
             if ntwk != 'nws-20000-1000-05':
                 #theory driven nmf+logreg
                 W = pickle.loads(s3_bucket.Object("output/SAMPLES-10000_NTWK-nws-20000-1000-05_K-"+str(num_nodes)+'_DYNAMIC-'+str(ca)+'_theory_driven_sdl-r1.pkl').get()['Body'].read())
-                model = sm.Logit(y_train, np.matmul(W, X_train.T).T).fit(method='newton')
+                model = FirthLogisticRegression(wald=True)
+                model.fit(np.matmul(W, X_train.T).T, y_train)
                 print(model.summary())
                 print(accuracy_score(y_test, model.predict(np.matmul(W, X_test.T).T).round()))
                 logreg = {"summary": model.summary(),
@@ -223,7 +228,7 @@ for ntwk in ntwk_names:
                     results_dict_new = SDL_BCD_class_new.fit(iter=iteration, subsample_size=None,
                                                                 beta = beta, search_radius_const = np.linalg.norm(X_train), update_nuance_param=False, if_compute_recons_error=False, if_validate=False)
                     print("Theory driven SDL"+ str(results_dict_new["Accuracy"]))
-                    s3_bucket.put_object(Body=pickle.dumps(logreg),
+                    s3_bucket.put_object(Body=pickle.dumps(results_dict_new),
                                          Key = "output/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(num_nodes)+'_DYNAMIC-'+str(ca)+'_theory_driven_sdlsdl-r4.pkl')
                 
                 else:
@@ -241,5 +246,5 @@ for ntwk in ntwk_names:
                     results_dict_new = SDL_BCD_class_new.fit(iter=iteration, subsample_size=None,
                                                                 beta = beta, search_radius_const = np.linalg.norm(X_train), update_nuance_param=False, if_compute_recons_error=False, if_validate=False)
                     print("Theory driven SDL"+ str(results_dict_new["Accuracy"]))
-                    s3_bucket.put_object(Body=pickle.dumps(logreg),
+                    s3_bucket.put_object(Body=pickle.dumps(results_dict_new),
                                          Key = "output/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(num_nodes)+'_DYNAMIC-'+str(ca)+'_theory_driven_sdlsdl-r4.pkl')
