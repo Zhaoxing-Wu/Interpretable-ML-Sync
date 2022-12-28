@@ -23,19 +23,17 @@ from SDL import SDL_BCD
 # =======================================================
 # Construct Argument Parser
 # =======================================================
-parser = argparse.ArgumentParser()    
+parser = argparse.ArgumentParser(description='Evaluates accuracies for classification of dynamics',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--method", default="supervised", type=str,
-                        help="Either \'supervised\' or \'unsupervised\'")
+                        choices=['supervised', 'unsupervised'], help="Whether to use a supervised or unsupervised approach")
 parser.add_argument("--model", default="kura", type=str,
-                        help="Either \'kura\', \'fca\' or \'ghm\'")
+                        choices=['kura', 'fca', 'ghm'], help="Which model of coupled oscillator to use")
 parser.add_argument("--num_dicts", default=8, type=int,
                         help="Number of dictionary atoms to learn")
 parser.add_argument("--logs_dir", default="../results", type=str,
                         help="Folder to store results from runs")
 args = parser.parse_args()
-
-assert args.method in ['supervised', 'unsupervised'], 'Choose from \'supervised\' or \'unsupervised\''
-assert args.model in ['kura', 'fca', 'ghm'], 'Choose from \'kura\', \'fca\' or \'ghm\''
 
 # =======================================================
 # Connect to S3 resource
@@ -62,20 +60,15 @@ allkeys = [obj['Key'] for obj in objects['Contents']]
 #         key='dummy_folder-100922/dummy_copy-100922.pkl').get()
 # data = pickle.loads(binary_stream['Body'].read())
 
-# For supervised data-informed approach -> Use SDL directly
+
+# For supervised data-informed approach -> Just apply SDL directly
 if args.method == 'supervised':
-    for k in range(10, 31, 5):
-        for ntwk in ['Caltech36', 'nws-20000-1000-05', 'UCLA26']:
-            col_adj = f"motifDynamics/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
-            X = pickle.loads(s3_bucket.Object(col_adj).get()['Body'].read())
-            df = pd.DataFrame(X)
-            print(df.shape)
+    pass
 
 # For unsupervised data-informed approach -> Use NMF + Logistic Regression
 if args.method == 'unsupervised':
-    for k in range(10, 31, 5):
-        for ntwk in ['Caltech36', 'nws-20000-1000-05', 'UCLA26']:
-            col_adj = f"motifDynamics/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
-            X = pickle.loads(s3_bucket.Object(col_adj).get()['Body'].read())
-            df = pd.DataFrame(X)
-            print(df.shape)
+    pass
+
+
+
+
