@@ -26,7 +26,7 @@ s3_client = boto3.client('s3',
             aws_secret_access_key='T6b2BIfRR1ONeMWDXdU9djae7BW8rcszS2EalHmR')
 
 # Specify bucket object
-s3_bucket = s3_resource.Bucket('interpretable-sync')  # type: ignore
+s3_bucket = s3_resource.Bucket('interpretable-sync') # type: ignore
 objects = s3_client.list_objects_v2(Bucket='interpretable-sync')
 allkeys = [obj['Key'] for obj in objects['Contents']]
 
@@ -41,10 +41,12 @@ with os.scandir('../Networks_all_NDL') as entries:
     for entry in entries:
         names.append(entry.name.split(".")[0])
 
-print(names)
-pdb.set_trace()
+print("Number of networks: ", len(names))
+print("Names of networks:", names)
+# pdb.set_trace()
 
 # For each network
+#for ntwk in tqdm.tqdm(names[15:]):
 for ntwk in tqdm.tqdm(names[15:]):
 
     # Load Network
@@ -69,27 +71,28 @@ for ntwk in tqdm.tqdm(names[15:]):
         # File key
         name = "motifSampling/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_PATCHES.pkl'
         if name not in allkeys:
-            # Generate patches
-            xembds = G.get_patches(k=k, sample_size=samples, skip_folded_hom=True)
-            # Saving data to store
-            data_to_store = {"X"    : xembds[0],
-                             "embs" : xembds[1],
-                             "Description" : "Motif sampling data on "
-                             +str(samples)+" sample of network '"+ntwk
-                             +"' of Hamiltonian path of length "+str(k)}
-            
-            # =======================================================
-            # Object -> binary stream -> bucket
-            # =======================================================
-            
-            # Use dumps() to make it serialized
-            binary_stream = pickle.dumps(data_to_store)
-            # Dump in bucket
-            print("'"+name+"' was added to the bucket.")
-            s3_bucket.put_object(Body=binary_stream, Key=name)
-            # Update allkeys
-            objects = s3_client.list_objects_v2(Bucket='interpretable-sync')
-            allkeys = [obj['Key'] for obj in objects['Contents']]
+                # Generate patches
+                xembds = G.get_patches(k=k, sample_size=samples, skip_folded_hom=True)
+                # Saving data to store
+                data_to_store = {"X"    : xembds[0],
+                                "embs" : xembds[1],
+                                "Description" : "Motif sampling data on "
+                                +str(samples)+" sample of network '"+ntwk
+                                +"' of Hamiltonian path of length "+str(k)}
+                
+                # =======================================================
+                # Object -> binary stream -> bucket
+                # =======================================================
+                
+                # Use dumps() to make it serialized
+                binary_stream = pickle.dumps(data_to_store)
+                # Dump in bucket
+                print("'"+name+"' was added to the bucket.")
+                s3_bucket.put_object(Body=binary_stream, Key=name)
+                # Update allkeys
+                objects = s3_client.list_objects_v2(Bucket='interpretable-sync')
+                allkeys = [obj['Key'] for obj in objects['Contents']]
+   
         
         else:
             print(name+" already exists.")

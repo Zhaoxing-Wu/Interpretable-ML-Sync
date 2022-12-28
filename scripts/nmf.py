@@ -2,7 +2,6 @@ import networkx as nx
 import numpy as np
 from tqdm import trange
 
-
 def generate_nxg(X, verbose=True):
     """Generate a list of networkx graphs from the provided list of vectorized adjacency matrices
     
@@ -33,7 +32,7 @@ def coding(X, W, H0,
           nonnegativity=True,
           subsample_ratio=1):
     """ Find hat{H} = argmin_H ( || X - WH||_{F}^2 + a1*|H| + a2*|H|_{F}^{2} ) 
-    within radius r from H0. Use row-wise projected gradient descent
+    within radius r from H0. Use row-wise projected gradient descent.
 
     Args:
         X (array): Data matrix
@@ -98,7 +97,6 @@ def ALS(X,
             H (array): Coefficient matrix
             recons_error (float): Reconstruction error
         """
-        
         d, n = X.shape
         r = n_components
         W = np.random.rand(d,r)

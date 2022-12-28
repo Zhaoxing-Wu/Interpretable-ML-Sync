@@ -2,12 +2,12 @@
 Train our RNN on extracted features or images.
 """
 import numpy as np 
-from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger 
+from keras.callbacks import TensorBoard
 import keras
 from identity import fca_true_classify
 from sklearn import metrics
 from GraphLRCN import GraphLSTM
-import time, sys
+import sys
 import os.path
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -37,10 +37,10 @@ def train_model(datain, dataout, seq_length, model, saved_model=None,
             dataout,
             batch_size=batch_size,
             validation_split=0.3,
-            verbose=1,
+            verbose=True,  # type: ignore
             callbacks=[tb],
             epochs=nb_epoch),
-            rm.model)
+            rm.model) 
 
 
 def trainandsave(datain, dataout, selection, seq_length, figurename,
@@ -80,20 +80,20 @@ def trainandsave(datain, dataout, selection, seq_length, figurename,
     hs, model_eval = train_model(datain, dataout, seq_length, model, 
             saved_model=saved_model,
             class_limit=class_limit, image_shape=image_shape,
-          batch_size=batch_size, nb_epoch=nb_epoch, lrate=learning)
+          batch_size=batch_size, nb_epoch=nb_epoch, lrate=learning)  # type: ignore
 
-    # save model
-    if figurename: model_eval.save('models/'+figurename)
+    # Save Model
+    if figurename: model_eval.save('models/'+figurename) # type: ignore
 
     # --------------------------------------
     # training loss and accuracy study
     # --------------------------------------
     # loss study, save loss figure
-    acc = hs.history['accuracy']
-    val_acc = hs.history['val_accuracy']
+    acc = hs.history['accuracy'] # type: ignore
+    val_acc = hs.history['val_accuracy'] # type: ignore
     if figure:
-        loss = hs.history['loss']
-        val_loss = hs.history['val_loss']
+        loss = hs.history['loss'] # type: ignore
+        val_loss = hs.history['val_loss'] # type: ignore
         epochs = np.arange(len(loss)) + 1
         tl, = plt.plot(epochs, loss, 'bo', label='Training loss')
         vl, = plt.plot(epochs, val_loss, 'b', label='Validation loss')
@@ -189,7 +189,7 @@ if __name__ == '__main__':
         y_test = y_test[identity_ind]
         
         # evaluate on loaded model
-        labels = reconstructed_model.predict_classes(X_test)
+        labels = reconstructed_model.predict_classes(X_test) # type: ignore
         print("------------------------------")
         print(metrics.confusion_matrix(y_test,labels))
         print(np.mean(y_test==labels))

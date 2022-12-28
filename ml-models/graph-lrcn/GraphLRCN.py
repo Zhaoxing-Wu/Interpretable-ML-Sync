@@ -1,16 +1,13 @@
 """
 A collection of models we'll use to attempt to classify videos.
 """
-from keras.layers import Dense, Flatten, Dropout, ZeroPadding3D,\
-BatchNormalization, Activation
+from keras.layers import Dense, Flatten, BatchNormalization, Activation
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential, load_model
-from keras.optimizers import Adam, RMSprop
+from keras.optimizers import Adam  # type: ignore
 from keras.layers.wrappers import TimeDistributed
 from keras.regularizers import l2
-from keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D,
-    MaxPooling2D, AveragePooling2D)
-from collections import deque
+from keras.layers.convolutional import Conv2D, MaxPooling2D
 import sys
 
 class GraphLSTM():
@@ -26,6 +23,7 @@ class GraphLSTM():
         self.saved_model = saved_model
         self.seq_length = seq_length
         self.nb_classes = nb_classes
+
         # Set the metrics. Only use top k if there's a need.
         metrics = ['accuracy']
         if self.nb_classes >= 10:
@@ -44,11 +42,9 @@ class GraphLSTM():
             sys.exit()
 
         # Now compile the network.
-        optimizer = Adam(lr=lrate)
-        self.model.compile(loss='binary_crossentropy', optimizer=optimizer,
-                           metrics=metrics)
-
-        print(self.model.summary())
+        optimizer = Adam(learning_rate=lrate)
+        self.model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=metrics) # type: ignore
+        print(self.model.summary()) # type: ignore
 
     def lrcn(self):
         """Build a CNN into RNN.
@@ -64,17 +60,19 @@ class GraphLSTM():
         """
         def add_default_block(model, kernel_filters, init, reg_lambda):
 
-            # conv
+            # Convolutional layer, with kernel size and initialisation
             model.add(TimeDistributed(Conv2D(kernel_filters, (3, 3), padding='same',
                                              kernel_initializer=init, kernel_regularizer=l2(l=reg_lambda))))
             model.add(TimeDistributed(BatchNormalization()))
             model.add(TimeDistributed(Activation('relu')))
-            # conv
+
+            # Convolutional layer, with kernel size and initialisation
             model.add(TimeDistributed(Conv2D(kernel_filters, (2, 2), padding='same',
                                              kernel_initializer=init, kernel_regularizer=l2(l=reg_lambda))))
             model.add(TimeDistributed(BatchNormalization()))
             model.add(TimeDistributed(Activation('relu')))
-            # max pool
+
+            # Max pooling layer
             model.add(TimeDistributed(MaxPooling2D((2, 2), strides=(1, 1))))
 
             return model
@@ -86,8 +84,8 @@ class GraphLSTM():
 
         # first (non-default) block
         model.add(TimeDistributed(Conv2D(8, (6, 6), strides=(1, 1), padding='same',
-                                         kernel_initializer=initialiser, kernel_regularizer=l2(l=reg_lambda)),
-                                  input_shape=self.input_shape))
+            kernel_initializer=initialiser, kernel_regularizer=l2(l=reg_lambda)),
+            input_shape=self.input_shape))
         model.add(TimeDistributed(BatchNormalization()))
         model.add(TimeDistributed(Activation('relu')))
 
@@ -98,17 +96,17 @@ class GraphLSTM():
         model.add(TimeDistributed(MaxPooling2D((4, 4), strides=(2, 2))))
 
         # 2nd-5th (default) blocks
-        model = add_default_block(model, 8,  init=initialiser, reg_lambda=reg_lambda)
+        #model = add_default_block(model, 8,  init=initialiser, reg_lambda=reg_lambda)
         #model = add_default_block(model, 128, init=initialiser, reg_lambda=reg_lambda)
         #model = add_default_block(model, 256, init=initialiser, reg_lambda=reg_lambda)
-        #model = add_default_block(model, 512, init=initialiser, reg_lambda=reg_lambda)
+        model = add_default_block(model, 512, init=initialiser, reg_lambda=reg_lambda)
 
         # LSTM output head
         model.add(TimeDistributed(Flatten()))
         model.add(LSTM(256, return_sequences=False, dropout=0.5))
         model.add(Dense(1, activation='sigmoid'))
 
-        print('model builds')
+        print('Building model...')
         return model
 
 
