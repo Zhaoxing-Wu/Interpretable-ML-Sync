@@ -19,7 +19,6 @@ from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_
 from sklearn.model_selection import train_test_split
 from imblearn.under_sampling import RandomUnderSampler
 from karateclub import Graph2Vec, Node2Vec
-from SDL.src.SDL_BCD import SDL_BCD
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import seaborn as sns

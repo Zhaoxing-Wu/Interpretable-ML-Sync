@@ -34,7 +34,7 @@ allkeys = [obj['Key'] for obj in objects['Contents']]
 
 for ntwk in names:
     samples = 10000
-    for i,k in enumerate([25, 30]):
+    for k in [10, 15, 20, 25, 30]:
         #read X
         filename = "motifSampling/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(k)+"_PATCHES.pkl"
         xEmbDes = pickle.loads(s3_bucket.Object(filename).get()['Body'].read())
@@ -49,8 +49,8 @@ for ntwk in names:
         for dynamic in ["kura","fca","ghm"]:
             
             #output name
-            name_dynamics = "motifDynamics/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_DYNAMIC-'+str(dynamic)+'_PARAMS-csv.pkl'
-            name_coladj = "motifDynamics/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_COLADJ-'+str(dynamic)+'_PARAMS-csv.pkl'
+            name_dynamics = "motifDynamics_new/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_DYNAMIC-'+str(dynamic)+'_PARAMS-csv.pkl'
+            name_coladj = "motifDynamics_new/SAMPLES-"+str(samples)+"_NTWK-"+ntwk+"_K-"+str(k)+'_COLADJ-'+str(dynamic)+'_PARAMS-csv.pkl'
             
             if name_dynamics not in allkeys:
                 print("pass")

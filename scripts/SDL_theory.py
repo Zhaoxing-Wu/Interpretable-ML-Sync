@@ -18,7 +18,7 @@ import boto3
 
 # Importing custon libraries:
 from nmf import *
-from SDL import *
+from SDL import SDL_BCD
 
 # =======================================================
 # Construct Argument Parser
@@ -58,10 +58,11 @@ allkeys = [obj['Key'] for obj in objects['Contents']]
 
 # For supervised data-informed approach -> Just apply SDL directly
 if args.method == 'supervised':
-
+    pass
 
 # For unsupervised data-informed approach -> Use NMF + Logistic Regression
 if args.method == 'unsupervised':
+    pass
 
 
 
