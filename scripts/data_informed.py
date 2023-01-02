@@ -45,7 +45,7 @@ s3_resource = boto3.resource(
             aws_access_key_id='AKIAWNJSAXHUWYXA4YJF',
             aws_secret_access_key='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'
             )
-s3_client = boto3.client('s3', 
+s3_client = boto3.client('s3',
             aws_access_key_id='AKIAWNJSAXHUWYXA4YJF',
             aws_secret_access_key='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')
 
@@ -63,16 +63,26 @@ allkeys = [obj['Key'] for obj in objects['Contents']]
 if args.method == 'supervised':
     for k in range(10, 31, 5):
         for ntwk in ['Caltech36', 'nws-20000-1000-05', 'UCLA26']:
-            col_adj = f"motifDynamics/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
-            X = pickle.loads(s3_bucket.Object(col_adj).get()['Body'].read())
-            df = pd.DataFrame(X)
-            print(df.shape)
+            dynamics = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_DYNAMICS-{args.model}_PARAMS-csv.pkl"
+            col_adj = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
+            
+            X = pickle.loads(s3_bucket.Object(dynamics).get()['Body'].read()) # Dynamics-label Dataset
+            CCAT = pickle.loads(s3_bucket.Object(col_adj).get()['Body'].read()) # Color-Coded Adjacency Tensor
+
+            df_dyn = pd.DataFrame(X)
+            df_ccat = pd.DataFrame(CCAT)
+            print(f"For k={k}, ntwk={ntwk}: Dynamics- {df_dyn.shape}")
+            print(f"For k={k}, ntwk={ntwk}: CCAT- {df_ccat.shape}")
+
+            
+
+
 
 # For unsupervised data-informed approach -> Use NMF + Logistic Regression
 if args.method == 'unsupervised':
     for k in range(10, 31, 5):
         for ntwk in ['Caltech36', 'nws-20000-1000-05', 'UCLA26']:
-            col_adj = f"motifDynamics/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
+            col_adj = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
             X = pickle.loads(s3_bucket.Object(col_adj).get()['Body'].read())
             df = pd.DataFrame(X)
             print(df.shape)

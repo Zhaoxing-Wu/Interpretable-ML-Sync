@@ -100,8 +100,6 @@ for ntwk in names:
                 # update allkeys
                 objects = s3_client.list_objects_v2(Bucket='interpretable-sync')
                 allkeys = [obj['Key'] for obj in objects['Contents']]
-                
+
             else:
                 print(name_dynamics+" already exists.")
-            
-            #del pntwk # free memory
