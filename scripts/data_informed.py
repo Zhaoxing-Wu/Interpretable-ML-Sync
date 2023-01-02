@@ -63,8 +63,11 @@ allkeys = [obj['Key'] for obj in objects['Contents']]
 if args.method == 'supervised':
     for k in range(10, 31, 5):
         for ntwk in ['Caltech36', 'nws-20000-1000-05', 'UCLA26']:
-            dynamics = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_DYNAMICS-{args.model}_PARAMS-csv.pkl"
+            dynamics = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_DYNAMIC-{args.model}_PARAMS-csv.pkl"
             col_adj = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
+
+            print(dynamics)
+            print(col_adj)
             
             X = pickle.loads(s3_bucket.Object(dynamics).get()['Body'].read()) # Dynamics-label Dataset
             CCAT = pickle.loads(s3_bucket.Object(col_adj).get()['Body'].read()) # Color-Coded Adjacency Tensor
@@ -74,7 +77,7 @@ if args.method == 'supervised':
             print(f"For k={k}, ntwk={ntwk}: Dynamics- {df_dyn.shape}")
             print(f"For k={k}, ntwk={ntwk}: CCAT- {df_ccat.shape}")
 
-            
+
 
 
 
