@@ -54,11 +54,6 @@ s3_bucket = s3_resource.Bucket('interpretable-sync')  # type: ignore
 objects = s3_client.list_objects_v2(Bucket='interpretable-sync')
 allkeys = [obj['Key'] for obj in objects['Contents']]
 
-# Read files containing dynamics from S3 bucket:
-# binary_stream = s3_resource.Object(bucket_name='interpretable-sync', 
-#         key='dummy_folder-100922/dummy_copy-100922.pkl').get()
-# data = pickle.loads(binary_stream['Body'].read())
-
 # For supervised data-informed approach -> Use SDL directly
 if args.method == 'supervised':
     for k in range(10, 31, 5):
@@ -77,7 +72,9 @@ if args.method == 'supervised':
             print(f"For k={k}, ntwk={ntwk}: Dynamics- {df_dyn.shape}")
             print(f"For k={k}, ntwk={ntwk}: CCAT- {df_ccat.shape}")
 
-
+            y = df_dyn.y
+            base = df_dyn.baseline_width
+            df_dyn = df_dyn.loc[:, 's1_1':'s50_20']
 
 
 
