@@ -33,7 +33,12 @@ parser.add_argument("--num_dicts", default=8, type=int,
                         help="Number of dictionary atoms to learn")
 parser.add_argument("--logs_dir", default="../results", type=str,
                         help="Folder to store results from runs")
+parser.add_argument("--DEBUG", default=False, type=bool,
+                        help="Whether to stay on debug mode")
 args = parser.parse_args()
+
+ref_df = pd.read_csv('../Drivers/datagen/ca_params.csv') # DataFrame to use for training SDL later
+ref_df = ref_df.set_index("ntwk")
 
 # =======================================================
 # Connect to S3 resource
@@ -57,24 +62,44 @@ allkeys = [obj['Key'] for obj in objects['Contents']]
 # For supervised data-informed approach -> Use SDL directly
 if args.method == 'supervised':
     for k in range(10, 31, 5):
+        i = 0
         for ntwk in ['Caltech36', 'nws-20000-1000-05', 'UCLA26']:
             dynamics = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_DYNAMIC-{args.model}_PARAMS-csv.pkl"
             col_adj = f"motifDynamics_new/SAMPLES-10000_NTWK-{ntwk}_K-{k}_COLADJ-{args.model}_PARAMS-csv.pkl"
 
-            print(dynamics)
-            print(col_adj)
+            if args.DEBUG:
+                print(dynamics)
+                print(col_adj)
             
             X = pickle.loads(s3_bucket.Object(dynamics).get()['Body'].read()) # Dynamics-label Dataset
             CCAT = pickle.loads(s3_bucket.Object(col_adj).get()['Body'].read()) # Color-Coded Adjacency Tensor
 
             df_dyn = pd.DataFrame(X)
             df_ccat = pd.DataFrame(CCAT)
-            print(f"For k={k}, ntwk={ntwk}: Dynamics- {df_dyn.shape}")
-            print(f"For k={k}, ntwk={ntwk}: CCAT- {df_ccat.shape}")
+
+            if args.DEBUG:
+                print(f"For k={k}, ntwk={ntwk}: Dynamics- {df_dyn.shape}")
+                print(f"For k={k}, ntwk={ntwk}: CCAT- {df_ccat.shape}")
 
             y = df_dyn.y
             base = df_dyn.baseline_width
-            df_dyn = df_dyn.loc[:, 's1_1':'s50_20']
+            s_ind = f'{args.model}_train_iter'
+            Y = df_dyn["y"].values
+            # df_dyn = df_dyn.loc[:, 's1_1':f"s{ref_df.loc['ntwk', s_ind][i]}_{k}"] # type: ignore
+            X = df_ccat.T.values
+
+            SDL_BCD_class_new = SDL_BCD(X=[X, Y],  # data, label
+                        X_test=[X_test.T, y_test.to_numpy().reshape(-1,1).T],
+                        #X_auxiliary = None,
+                        n_components=r,  # =: r = number of columns in dictionary matrices W, W'
+                        # ini_loading=None,  # Initializatio for [W,W'], W1.shape = [d1, r], W2.shape = [d2, r]
+                        # ini_loading=[W_true, np.hstack((np.array([[0]]), Beta_true))],
+                        # ini_code = H_true,
+                        xi=xi,  # weight on label reconstruction error
+                        L1_reg = [0,0,0], # L1 regularizer for code H, dictionary W[0], reg param W[1]
+                        L2_reg = [0,0,0], # L2 regularizer for code H, dictionary W[0], reg param W[1]
+                        nonnegativity=[True,True,False], # nonnegativity constraints on code H, dictionary W[0], reg params W[1]
+                        full_dim=False)
 
 
 
