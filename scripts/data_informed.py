@@ -88,6 +88,11 @@ if args.method == 'supervised':
             # df_dyn = df_dyn.loc[:, 's1_1':f"s{ref_df.loc['ntwk', s_ind][i]}_{k}"] # type: ignore
             X = df_ccat.T.values
 
+            xi = 1
+            iter_avg = 1
+            beta = 0.5
+            iteration = 100
+            r = 4
             SDL_BCD_class_new = SDL_BCD(X=[X, Y],  # data, label
                         X_test=[X_test.T, y_test.to_numpy().reshape(-1,1).T],
                         #X_auxiliary = None,
