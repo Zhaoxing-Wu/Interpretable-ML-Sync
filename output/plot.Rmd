@@ -1,0 +1,49 @@
+---
+title: "sdl"
+output: html_document
+date: "2022-11-16"
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+df_data = read.csv("perm_data_driven.csv")
+df_theory = read.csv("perm_theory_driven.csv")
+```
+
+
+```{r}
+#data-driven gllm
+df = df_data %>%
+  cbind(df_theory[,4:21]) %>%
+  select(theory_sdl_r4_accuracy, 
+         theory_nmflog_accuracy, 
+         sdl_r4_acc, sdl_r2_acc, rf_acc, base_acc, 
+         ca, num_node, ntwk) %>%
+  #"theory_sdl_r4_accuracy","sdl_r2_acc",
+  pivot_longer(cols = c( 
+         "theory_nmflog_accuracy", 
+         "sdl_r4_acc",  "rf_acc", "base_acc"), names_to = "model", values_to = "acc")
+df$ca[df$ca=="kura"] = "Kuramoto"
+df$ca[df$ca=="fca"] = "FCA"
+df$ca[df$ca=="ghm"] = "GHM"
+df$model[df$model=="theory_nmflog_accuracy"] = "Theory-driven GLLM"
+df$model[df$model=="sdl_r4_acc"] = "Data-driven GLLM"
+df$model[df$model=="rf_acc"] = "Random Forest"
+df$model[df$model=="base_acc"] = "Baseline"
+df$ntwk[df$ntwk=="nws-20000-1000-05"] = "NWS"
+
+
+pdf("acc.pdf", width = 8, height = 4)
+df%>%
+  ggplot(aes(x = num_node, y = acc))+
+  geom_point(aes(col = model))+
+  geom_line(aes(col = model))+
+  scale_colour_brewer(palette = "Set1")+
+  facet_grid(ntwk~ca) +
+  xlab("Number of Nodes") +
+  ylab("Accuracy")+
+  theme_bw()
+dev.off()
+```
+
