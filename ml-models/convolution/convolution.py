@@ -62,16 +62,16 @@ def FCA(G, s, k, iteration):
     """
     b = (k-1)//2  # Blinking color
     ret = s
-    s_next = np.zeros(G.number_of_nodes())
+    s_next = np.zeros(G.num_nodes())
     for h in range(iteration):
         if h != 0:
             s = s_next  # Update to the newest state
             ret = np.vstack((ret, s_next))
-        s_next = np.zeros(G.number_of_nodes())
-        for i in range(G.number_of_nodes()):
+        s_next = np.zeros(G.num_nodes())
+        for i in range(G.num_nodes()):
             flag = False  # True if inhibited by the blinking neighbor
             if s[i] > b:
-                for j in range(G.number_of_nodes()):
+                for j in range(G.num_nodes()):
                     if s[j] == b and list(G.nodes)[j] in list(G.adj[list(G.nodes)[i]]):
                         flag = True
                 if flag:
