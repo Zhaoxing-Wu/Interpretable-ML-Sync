@@ -2,6 +2,7 @@ from helper import *
 # Imports
 import numpy as np
 import pandas as pd
+import time
 from NNetwork import NNetwork as nn
 import networkx as nx
 import tqdm
@@ -169,28 +170,30 @@ allkeys = [obj['Key'] for obj in objects['Contents']]
 
 ###########################################data driven sdl#########################################################################
 # for ntwk in ['nws-20000-1000-05', 'Caltech36', 'UCLA26']:
-for ntwk in ['nws-20000-1000-05']:
+for ntwk in ['UCLA26']:
     for num_nodes in [10, 15, 20, 25, 30]:
         # for ca in ["kura", "fca", "ghm"]:
-        for ca in ["kura", "fca"]:
+        for ca in ["ghm"]:
             # Supervised Dictionary Learning
-            print(f"{ntwk}_{num_nodes}_{ca}")
-            print(f"Now reading the data....")
+            print(f"{ntwk}_{num_nodes}_{ca}\n")
+            print(f"Now reading the data....\n")
             xy = pickle.loads(s3_bucket.Object("sdl_xy/SAMPLES-10000_NTWK-"+ntwk+"_K-"+str(num_nodes)+'_DYNAMIC-'+str(ca)+".pkl").get()['Body'].read())
             
             X_train = xy["X_train"]
+            print(X_train.T.shape)
+            time.sleep(10)
             y_train = xy["y_train"]
             X_test = xy["X_test"]
             y_test = xy["y_test"]
             xi = 1
             iter_avg = 2
             beta = 0.5
-            iteration = 100
+            iteration = 10
             r = 2 # Number of dictionaries to learn
             
-            print(f"Now starting runs...")
+            print(f"Now starting runs...\n")
             for run in range(5):
-                print(f"Currently at run #{run}")
+                print(f"Currently at run #{run+1}\n")
                 SDL_BCD_class_new = SDL_BCD(X=[X_train.T, y_train.to_numpy().reshape(-1,1).T],  # Data, Label
                                             X_test=[X_test.T, y_test.to_numpy().reshape(-1,1).T],
                                             n_components=r, 
@@ -208,8 +211,8 @@ for ntwk in ['nws-20000-1000-05']:
                                                          if_compute_recons_error=False, 
                                                          if_validate=False)
 
-                print(f"Now writing result to bucket...")
+                print(f"Now writing result to bucket...\n")
                 s3_bucket.put_object(Body= pickle.dumps(results_dict_new),
-                                     Key = f"output/sdl_runs/{ca}/r{r}/SAMPLES-10000_NTWK-{ntwk}_K-{num_nodes}_DYNAMIC-{ca}_sdl-r{r}_{run}.pkl")
+                                     Key = f"output/sdl_runs/{ca}/r{r}/SAMPLES-10000_NTWK-{ntwk}_K-{num_nodes}_DYNAMIC-{ca}_sdl-r{r}_{run+1}.pkl")
             
             
